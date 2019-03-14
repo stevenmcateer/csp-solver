@@ -20,12 +20,32 @@ class trace:
 class state:
     task = "a"
     duration = 6
-    domain = ["q". "r", "w", ...]
+    domain = ["q", "r", "w", ...]
+
+class global_state:
+    unassigned = []
+    assigned = {} # key is processor and val is ordered list of states
+    ordered_domain = []
+
 
 # this gets passed in to trace to start
 global_state = [state(), state(), state()]
 
-def cps_backtrack():
+def cps_backtrack(global_state, knowledge_base):
+
+    # Check if all variables are assigned
+    if len(global_state.unassigned) == 0:
+        return global_state.assigned #exit
+
+    variable = MVR() # get the next variable assignment
+    value = least_constraining_value() # get the next value
+
+    for value in global_state.ordered_domain:
+        #if value is consistent with assignment
+        if global_state.assigned[value]:
+            # add it
+
+
     return global_state
 
 def MVR():
