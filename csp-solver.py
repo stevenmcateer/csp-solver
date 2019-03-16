@@ -31,30 +31,62 @@ class global_state:
 # this gets passed in to trace to start
 global_state = [state(), state(), state()]
 
-def cps_backtrack(global_state, knowledge_base):
+def csp_backtrack(global_state, knowledge_base):
 
     # Check if all variables are assigned
     if len(global_state.unassigned) == 0:
         return global_state.assigned #exit
 
-    variable = MVR() # get the next variable assignment
+    #might need to make a deepcopy
+
+    # get the next variable assignment based on mrv
+    variable = mrv(global_state)
     value = least_constraining_value() # get the next value
+
 
     for value in global_state.ordered_domain:
         #if value is consistent with assignment
-        if global_state.assigned[value]:
-            # add it
+        if is_consistent(value):
+            global_state.assigned[value] = variable
+            inferences = get_inferences(variable, value)
 
+            if inferences:
+                #add inferences to assignment
+                result = csp_backtrack(global_state, knowledge_base)
+
+            #success
+            if result:
+                return result
+
+            #failure
+            del global_state.assigned[value]
+            #delete inferences from assignment
 
     return global_state
 
-def MVR():
-    return mvr
+def get_inferences(variable, value):
+    return True
+
+def is_consistent(value):
+
+    return True
+def mrv(global_state):
+    min_remaining_val = 0
+
+    for var in global_state.unassigned:
+        num_remaining_vals = len(var.domain)
+        if num_remaining_vals < min_remaining_val:
+            min_remaining_val = num_remaining_vals
+        #if they equal each other, pick the least constraining val
+        elif num_remaining_vals == min_remaining_val:
+            min_remaining_val = least_constraining_value()
+
+    return min_remaining_val
 
 def least_constraining_value():
     return value
 
-def ARC_3(): # could also be arc_4
+def arc_3(): # could also be arc_4
     return arc_3
 
 def read_input(path):
