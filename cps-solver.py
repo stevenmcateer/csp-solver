@@ -31,7 +31,9 @@ def cps_backtrack():
 def MVR():
     return mvr
 
-def least_constraining_value():
+def least_constraining_value(variable, global_state, knowledge_base):
+    # we choose the least constraining value for the variable selected
+    # book 6.3.2
     return value
 
 def ARC_3(): # could also be arc_4
