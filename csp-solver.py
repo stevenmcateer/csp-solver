@@ -120,9 +120,10 @@ def read_input():
         global_state = GlobalState()
         k_base = KnowledgeBase()
         for line in lines:
-
+            # strip the new line character
             line = line.strip("\n")
 
+            # get the field name of the inputs 
             if line.find("variables") != -1:
                 switch = "variables"
 
@@ -146,43 +147,44 @@ def read_input():
 
             elif line.find("not simultaneous") != -1:
                 switch = "not simultaneous"
-            
-            elif line == '\n':
-                break
+            elif line == '\n' or line == '':
+                pass
 
+            # write the values into the appropriate fields
             elif switch == "variables":
+                print("variables\n")
                 split = line.split(" ", 2)
                 state = State(split[0], int(split[1]))
                 global_state.unassigned.append(state)
                 print(global_state.unassigned)
-
+                print()
             elif switch == "values":
                 # TODO: might want to add values to the domain for every varaible
                 global_state.ordered_domain.append(line)
                 print(global_state.ordered_domain)
+                print()
             elif switch == "deadline":
                 k_base.deadline = int(line)
                 print(k_base.deadline)
+                print()
             elif switch == "inclusive":
                 split = line.split(" ")
                 k_base.unary[split[0]] = split[1:] 
                 print(k_base.unary)
+                print()
             elif switch == "exclusive":
                 split = line.split(" ")
                 k_base.unary[split[0]] = split[1:]
                 domain = global_state.ordered_domain
                 k_base.unary[split[0]] = k_base.inv_unary(domain, split[0]) 
                 print(k_base.unary)
+                print()
             elif switch == "binary equals":
-                print("HELP")
-                print("other shit = ", line)
+                print("binary equals\n")
                 split = line.split(" ")
-                
-
                 domain = global_state.ordered_domain
 
                 #TODO: might have weird errors not copying lists!!!
-
                 if(split[0] in k_base.unary):
                     left = k_base.unary[split[0]]
                 else:
@@ -204,8 +206,80 @@ def read_input():
 
                 k_base.binary_equals[line] = matrix
                 print(k_base.binary_equals)
+                print()
+
+            elif switch == "binary not equals":
+                # TODO: THIS IS NOT IMPLEMENTED THE WAY SHE HAS IT IN THE NOTES HER WAY MAKES NO SENSE
+                print("binary not equals\n")
+                split = line.split(" ")
+                domain = global_state.ordered_domain
+
+                #TODO: might have weird errors not copying lists!!!
+                if(split[0] in k_base.unary):
+                    left = k_base.unary[split[0]]
+                else:
+                    left = domain
+                
+                if(split[1] in k_base.unary):
+                    top = k_base.unary[split[1]]
+                else:
+                    top = domain
+
+                matrix = []
+                for value in domain:
+                    row = [0] * len(domain)
+                    matrix.append(row)
+
+                print(top)
+
+                # this code is gross but the output is right
+                for iter_top, val_top in enumerate(domain):
+                    for iter_left, val_left in enumerate(domain):
+                        if val_left in left and val_top in top and val_left != val_top:
+                            matrix[iter_left][iter_top] = 1
+
+                k_base.binary_not_equals[line] = matrix
+                print(k_base.binary_not_equals)
+                print()
+
+            elif switch == "not simultaneous":
+                print("binary not simultaneous\n")
+                split = line.split(" ")
+                domain = global_state.ordered_domain
+
+                #TODO: might have weird errors not copying lists!!!
+                if(split[0] in k_base.unary):
+                    left = k_base.unary[split[0]]
+                else:
+                    left = domain
+                
+                if(split[1] in k_base.unary):
+                    top = k_base.unary[split[1]]
+                else:
+                    top = domain
+                    
+                
+
+                matrix = []
+                for value in domain:
+                    row = [0] * len(domain)
+                    matrix.append(row)
+
+                # this code is gross but the output is right
+                for iter_top, val_top in enumerate(domain):
+                    for iter_left, val_left in enumerate(domain):
+                        if val_left in left and val_top in top:
+                            if(val_left != split[2] or val_top != split[3]):
+                                matrix[iter_left][iter_top] = 1
+
+                k_base.binary_not_simultaneous[line] = matrix
+                print(k_base.binary_not_simultaneous)
+                print()
+
+
             else:
-                print("other shit = ", line)
+                print("THIS IS A BIG ERROR IN THE INPUT FILE!!", line)
+                print()
 
     # return knowledge_base, states
 

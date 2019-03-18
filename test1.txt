@@ -25,6 +25,7 @@ C q r
 ##### - unary exclusive
 E z
 L y p
+C q r
 ##### - binary equals
 C D
 E F
