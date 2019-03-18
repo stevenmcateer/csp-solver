@@ -40,9 +40,12 @@ class State:
     def __str__(self):
         return "{}, {}, {}".format(self.task, self.duration, self.domain)
 
+    def __eq__(self, task_):
+        return self.task == task_
+
 class GlobalState:
     def __init__(self):
-        self.unassigned = []
+        self.unassigned = {}
         self.assigned = {} # key is processor and val is ordered list of states
         self.ordered_domain = []
 
@@ -88,8 +91,9 @@ def is_consistent(value):
 def mrv(global_state, knowledge_base):
     #find lowest domain val for a variable and return it
 
+    # TODO: fix this do not need
     var_val = {}
-    for var in global_state.unassigned:
+    for _, var in global_state.unassigned.items():
         var_val[var] = len(var.domain)
 
 
@@ -106,6 +110,26 @@ def mrv(global_state, knowledge_base):
     #         min_remaining_val = least_constraining_value(var, global_state, knowledge_base)
 
     # return min_remaining_val
+
+def degree_heuristic(variable, knowledge_base):
+    # Degree heuristic: assign a value to the variable that is involved in the largest
+    # number of constraints on other unassigned variables.
+
+    #TODO: could also weight this
+    degree = 0
+    for key, _ in knowledge_base.binary_equals.items():
+        if key.find(variable) != -1:
+            degree += 1
+
+    for key, _ in knowledge_base.binary_not_equals.items():
+        if key.find(variable) != -1:
+            degree += 1
+    
+    for key, _ in knowledge_base.binary_not_simultaneous.items():
+        if key.find(variable) != -1:
+            degree += 1
+
+    return degree
 
 def least_constraining_value(variable, global_state, knowledge_base):
     # we choose the least constraining value for the variable selected
@@ -161,7 +185,7 @@ def read_input():
                 print("variables\n")
                 split = line.split(" ", 2)
                 state = State(split[0], int(split[1]))
-                global_state.unassigned.append(state)
+                global_state.unassigned[split[0]] = state
                 print(global_state.unassigned)
                 print()
             elif switch == "values":
@@ -175,7 +199,8 @@ def read_input():
                 print()
             elif switch == "inclusive":
                 split = line.split(" ")
-                k_base.unary[split[0]] = split[1:] 
+                k_base.unary[split[0]] = split[1:]
+                global_state.unassigned[split[0]].domain = split[1:]
                 print(k_base.unary)
                 print()
             elif switch == "exclusive":
@@ -183,6 +208,7 @@ def read_input():
                 k_base.unary[split[0]] = split[1:]
                 domain = global_state.ordered_domain
                 k_base.unary[split[0]] = k_base.inv_unary(domain, split[0]) 
+                global_state.unassigned[split[0]].domain = k_base.inv_unary(domain, split[0])
                 print(k_base.unary)
                 print()
             elif switch == "binary equals":
@@ -215,7 +241,6 @@ def read_input():
                 print()
 
             elif switch == "binary not equals":
-                # TODO: THIS IS NOT IMPLEMENTED THE WAY SHE HAS IT IN THE NOTES HER WAY MAKES NO SENSE
                 print("binary not equals\n")
                 split = line.split(" ")
                 domain = global_state.ordered_domain
@@ -286,15 +311,25 @@ def read_input():
             else:
                 print("THIS IS A BIG ERROR IN THE INPUT FILE!!", line)
                 print()
-
+    # fill in the domain for the variables that dont have assignments
+    for _, value in global_state.unassigned.items():
+        if value.domain == []:
+            value.domain = global_state.ordered_domain
     return global_state, k_base
 
 if __name__ == "__main__":
     
+
+    #TODO: UNIQUE stuff, check the iniary constrainsts, make sure they are satisfiable before we start backtracking
+    #TODO: UNIQUE stuff, check the the timing, make sure we have enough time for all tasks
+    #TODO: UNIQUE stuff, make sure no task is longer than the deadline
+
+
     global_state, k_base = read_input()
 
     print(global_state)
     print(k_base)
+    import ipdb; ipdb.set_trace()
     # this gets passed in to trace to start
     # global_state = [state(), state(), state()]
 
