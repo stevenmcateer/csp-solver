@@ -9,7 +9,7 @@ class KnowledgeBase:
         # inclusive of G
         # exclusive of C
         # as well as binary not equals from input
-        # key = ["CG"]
+        # key = ["C G"]
         self.binary_equals = {}  # dictionary of matrices
         # do the same but different
         self.binary_not_equals = {} # dictionary of matrices
@@ -48,21 +48,20 @@ class GlobalState:
 
 
 def csp_backtrack(global_state, knowledge_base):
-
     # Check if all variables are assigned
-    if len(global_state.unassigned) == 0:
-        return global_state.assigned #exit
-
-    possible_processors = global_state.ordered_domain.copy()
+    # this means unassigned is empty
+    if global_state.unassigned == False:
+        return global_state #exit
 
     # get the next variable assignment based on mrv
     variable = mrv(global_state, knowledge_base)
     value = least_constraining_value(variable, global_state, knowledge_base) # get the next value
 
-
     for value in global_state.ordered_domain:
-        #if value is consistent with assignment
-        if is_consistent(value):
+        # if value is consistent with assignment
+        # check that arc-3 domain value lists are not empty for the unassigned variables
+        # this might be checked in arc-3, not here
+        if arc_3(global_state, knowledge_base).unassigned:
             global_state.assigned[value] = variable
             inferences = arc_3(variable, value)
 
@@ -80,9 +79,6 @@ def csp_backtrack(global_state, knowledge_base):
 
     return global_state
 
-def is_consistent(value):
-
-    return True
 
 #find the min remaining value
 def mrv(global_state, knowledge_base):
@@ -92,6 +88,7 @@ def mrv(global_state, knowledge_base):
     for var in global_state.unassigned:
         var_val[var] = len(var.domain)
 
+    #degree heuristic
 
     #faster way to get the min variable
     #not sure if it needs to be altered when 2 domain lengths are the same
@@ -113,8 +110,35 @@ def least_constraining_value(variable, global_state, knowledge_base):
     value = 0
     return value
 
-def arc_3(variable, value): # could also be arc_4
+#inference
+def arc_3(global_state, knowledge_base): # could also be arc_4
+
+
     return arc_3
+
+
+# http://aima.cs.berkeley.edu/python/csp.py
+def AC3(csp, queue=None):
+    """[Fig. 5.7]"""
+    if queue == None:
+        queue = [(Xi, Xk) for Xi in csp.vars for Xk in csp.neighbors[Xi]]
+    while queue:
+        (Xi, Xj) = queue.pop()
+        if remove_inconsistent_values(csp, Xi, Xj):
+            for Xk in csp.neighbors[Xi]:
+                queue.append((Xk, Xi))
+
+def remove_inconsistent_values(csp, Xi, Xj):
+    "Return true if we remove a value."
+    removed = False
+    for x in csp.curr_domains[Xi][:]:
+        # If Xi=x conflicts with Xj=y for every possible y, eliminate Xi=x
+        if every(lambda y: not csp.constraints(Xi, x, Xj, y),
+                csp.curr_domains[Xj]):
+            csp.curr_domains[Xi].remove(x)
+            removed = True
+    return removed
+
 
 def read_input():
 
