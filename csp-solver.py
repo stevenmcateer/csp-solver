@@ -53,7 +53,7 @@ def csp_backtrack(global_state, knowledge_base):
     if len(global_state.unassigned) == 0:
         return global_state.assigned #exit
 
-    #might need to make a deepcopy
+    possible_processors = global_state.ordered_domain.copy()
 
     # get the next variable assignment based on mrv
     variable = mrv(global_state, knowledge_base)
@@ -64,7 +64,7 @@ def csp_backtrack(global_state, knowledge_base):
         #if value is consistent with assignment
         if is_consistent(value):
             global_state.assigned[value] = variable
-            inferences = get_inferences(variable, value)
+            inferences = arc_3(variable, value)
 
             if inferences:
                 #add inferences to assignment
@@ -80,24 +80,32 @@ def csp_backtrack(global_state, knowledge_base):
 
     return global_state
 
-def get_inferences(variable, value):
-    return True
-
 def is_consistent(value):
 
     return True
+
+#find the min remaining value
 def mrv(global_state, knowledge_base):
-    min_remaining_val = 0
+    #find lowest domain val for a variable and return it
 
+    var_val = {}
     for var in global_state.unassigned:
-        num_remaining_vals = len(var.domain)
-        if num_remaining_vals < min_remaining_val:
-            min_remaining_val = num_remaining_vals
-        #if they equal each other, pick the least constraining val
-        elif num_remaining_vals == min_remaining_val:
-            min_remaining_val = least_constraining_value(var, global_state, knowledge_base)
+        var_val[var] = len(var.domain)
 
-    return min_remaining_val
+
+    #faster way to get the min variable
+    #not sure if it needs to be altered when 2 domain lengths are the same
+    return min(var_val, key=lambda x: var_val.get(x))
+
+    # for var in var_val:
+    #     num_remaining_vals = var_val[var]
+    #     if num_remaining_vals < min_remaining_val:
+    #         min_remaining_val = num_remaining_vals
+    #     #if they equal each other, pick the least constraining val
+    #     elif num_remaining_vals == min_remaining_val:
+    #         min_remaining_val = least_constraining_value(var, global_state, knowledge_base)
+
+    # return min_remaining_val
 
 def least_constraining_value(variable, global_state, knowledge_base):
     # we choose the least constraining value for the variable selected
@@ -105,7 +113,7 @@ def least_constraining_value(variable, global_state, knowledge_base):
     value = 0
     return value
 
-def arc_3(): # could also be arc_4
+def arc_3(variable, value): # could also be arc_4
     return arc_3
 
 def read_input():
