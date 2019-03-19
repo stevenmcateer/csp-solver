@@ -86,27 +86,30 @@ def csp_backtrack(global_state, knowledge_base):
 #find the min remaining value
 def mrv(global_state, knowledge_base):
     #find lowest domain val for a variable and return it
-
     # TODO: fix this do not need
     var_val = {}
     for _, var in global_state.unassigned.items():
-        var_val[var] = len(var.domain)
+        var_val[var.task] = len(var.domain)
 
-    #degree heuristic
+    min_values = {}
+    for key in var_val.keys():
+        if var_val[key] == min(var_val.values()):
+            min_values[key] = min(var_val.values())
 
-    #faster way to get the min variable
-    #not sure if it needs to be altered when 2 domain lengths are the same
-    return min(var_val, key=lambda x: var_val.get(x))
 
-    # for var in var_val:
-    #     num_remaining_vals = var_val[var]
-    #     if num_remaining_vals < min_remaining_val:
-    #         min_remaining_val = num_remaining_vals
-    #     #if they equal each other, pick the least constraining val
-    #     elif num_remaining_vals == min_remaining_val:
-    #         min_remaining_val = least_constraining_value(var, global_state, knowledge_base)
+    print(var_val)
+    #dictionary for variable and degree heuristic
+    var_degree = {}
 
-    # return min_remaining_val
+    if len(min_values) == 1:
+        print(min(var_val, key=lambda x: var_val.get(x)))
+        return min(var_val, key=lambda x: var_val.get(x))
+    else:
+        for var in min_values:
+            var_degree[var] = degree_heuristic(var, knowledge_base)
+
+        return min(var_degree, key=lambda x: var_degree.get(x))
+
 
 def degree_heuristic(variable, knowledge_base):
     # Degree heuristic: assign a value to the variable that is involved in the largest
@@ -232,9 +235,10 @@ def read_input():
                 k_base.unary[split[0]] = split[1:]
                 domain = global_state.ordered_domain
                 k_base.unary[split[0]] = k_base.inv_unary(domain, split[0]) 
-                global_state.unassigned[split[0]].domain = k_base.inv_unary(domain, split[0])
+                global_state.unassigned[split[0]].domain = k_base.unary[split[0]]
                 print(k_base.unary)
-                print()
+                print("lookee here")
+                print(global_state.unassigned)
             elif switch == "binary equals":
                 print("binary equals\n")
                 split = line.split(" ")
@@ -353,7 +357,8 @@ if __name__ == "__main__":
 
     print(global_state)
     print(k_base)
-    import ipdb; ipdb.set_trace()
+    # import ipdb; ipdb.set_trace()
+    mrv(global_state, k_base)
     # this gets passed in to trace to start
     # global_state = [state(), state(), state()]
 
