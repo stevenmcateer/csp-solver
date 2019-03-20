@@ -21,7 +21,7 @@ z
 ##### - unary inclusive
 D q r
 G p r y z
-C q r
+C q r 
 ##### - unary exclusive
 E z
 L y p

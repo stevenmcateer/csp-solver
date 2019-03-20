@@ -58,11 +58,12 @@ class KnowledgeBase:
     
         return matrix
 
-    def make_binary_not_simultaneous(self, state1, state2, domain):
+    def make_binary_not_simultaneous(self, line, state1, state2, domain):
+
+        split = line.split(" ")
 
         left = state1.domain
         top = state2.domain
-
         matrix = []
         for value in domain:
             row = [0] * len(domain)
@@ -71,9 +72,11 @@ class KnowledgeBase:
         for iter_top, val_top in enumerate(domain):
                     for iter_left, val_left in enumerate(domain):
                         if val_left in left and val_top in top:
-                            if(val_left != state1.task or val_top != state1.task):
+                            if(val_left != split[2] or val_top != split[3]):
                                 matrix[iter_left][iter_top] = 1
-    
+                            if(val_left == state1.task and val_top == state2.task):
+                                print("in the matrix")
+                                matrix[iter_left][iter_top] = 0
         return matrix
 
     def get_domain_from_matrix(self, matrix, ordered_domain):
@@ -84,7 +87,6 @@ class KnowledgeBase:
         for i, list_ in enumerate(matrix):
                 if(1 in list_):
                     matrix_1_domain.append(ordered_domain[i])
-                    
         return matrix_1_domain
         
     def transpose_matrix(self, matrix):
@@ -96,13 +98,16 @@ class KnowledgeBase:
 
         for value in global_state.ordered_domain:
             times[value] = global_state.unassigned[variable].duration
-        
         for key, value in global_state.assigned.items():
-
-            for state in value:
-                times[value] += state.duration
-
+            for _, state in value.items():
+                times[key] += state.duration
         return times
+
+    def get_assigned_variable(self, key, global_state):
+        for _, tasks in global_state.assigned.items():
+            for id, task in tasks.items():
+                if(id == key):
+                    return task
 
     def recompute_binary_constraints(self, variable, global_state):
 
@@ -110,55 +115,112 @@ class KnowledgeBase:
         for key, matrix in self.binary_equals.items():
             location = key.find(variable)
             if location != -1:
-                first = global_state.unassigned[key[0]]
-                second = global_state.unassigned[key[2]]
-                print(key, "bin_=")
-                print(first)
-                print(second)
+
+                # The Value is missing because the constraint is satisfied
+                if key[0] not in global_state.unassigned:
+                    first = self.get_assigned_variable(key[0], global_state)
+                else:
+                    first = global_state.unassigned[key[0]]
+                if key[2] not in global_state.unassigned:
+                    second = self.get_assigned_variable(key[2], global_state)
+                else:
+                    second = global_state.unassigned[key[2]]
+
+                # print(key, "bin_=")
+                # print(first)
+                # print(second)
                 matrix = self.make_binary_equals(first, second, global_state.ordered_domain)
 
                 second.domain = self.get_domain_from_matrix(matrix, global_state.ordered_domain)
                 first.domain = self.get_domain_from_matrix(self.transpose_matrix(matrix), global_state.ordered_domain)
-                print(first, "after")
-                print(second, "after")
+                # print(first, "after recompute of", variable)
+                # print(second, "after recompute of", variable)
 
         # binary_not_equals
         for key, matrix in self.binary_not_equals.items():
             location = key.find(variable)
             if location != -1:
-                first = global_state.unassigned[key[0]]
-                second = global_state.unassigned[key[2]]
-                print(key, "bin_!=")
-                print(first)
-                print(second)
+
+                # The Value is missing because the constraint is satisfied
+                if key[0] not in global_state.unassigned:
+                    first = self.get_assigned_variable(key[0], global_state)
+                else:
+                    first = global_state.unassigned[key[0]]
+                if key[2] not in global_state.unassigned:
+                    second = self.get_assigned_variable(key[2], global_state)
+                else:
+                    second = global_state.unassigned[key[2]]
+
+                # print(key, "bin_!=")
+                # print(first)
+                # print(second)
                 matrix = self.make_binary_not_equals(first, second, global_state.ordered_domain)
 
                 second.domain = self.get_domain_from_matrix(matrix, global_state.ordered_domain)
                 first.domain = self.get_domain_from_matrix(self.transpose_matrix(matrix), global_state.ordered_domain)
-                print("new_domain", first)
-                print("new_domain", second)
+                # print(first, "after recompute of", variable)
+                # print(second, "after recompute of", variable)
 
         # binary_not_simultaneous
         for key, matrix in self.binary_not_simultaneous.items():
             location = key.find(variable)
             if location != -1:
-                first = global_state.unassigned[key[0]]
-                second = global_state.unassigned[key[2]]
-                print(key, "bin_!same_time")
-                print(first)
-                print(second)
-                matrix = self.make_binary_not_simultaneous(first, second, global_state.ordered_domain)
+
+                # The Value is missing because the constraint is satisfied
+                if key[0] not in global_state.unassigned:
+                    first = self.get_assigned_variable(key[0], global_state)
+                else:
+                    first = global_state.unassigned[key[0]]
+                if key[2] not in global_state.unassigned:
+                    second = self.get_assigned_variable(key[2], global_state)
+                else:
+                    second = global_state.unassigned[key[2]]
+                
+                
+
+                # print(key, "bin_!same_time")
+                # print(first)
+                # print(second)
+                matrix = self.make_binary_not_simultaneous(key, first, second, global_state.ordered_domain)
 
                 second.domain = self.get_domain_from_matrix(matrix, global_state.ordered_domain)
                 first.domain = self.get_domain_from_matrix(self.transpose_matrix(matrix), global_state.ordered_domain)
-                print("new_domain", first)
-                print("new_domain", second)
+                # print(first, "after recompute of", variable)
+                # print(second, "after recompute of", variable)
 
         return global_state
 
 
-# class trace:
-#     order = # list of the global state for each step
+class Trace:
+    def __init__(self, global_state, knowledge_base):
+        self.current_csp = (global_state, knowledge_base)
+        self.history = [copy.deepcopy(self.current_csp)]
+
+    def run_trace(self):
+        result = csp_backtrack(self.current_csp[0], self.current_csp[1])
+        if (result == False):
+            print("there is not any solutions present")
+        elif (result[0] == "back_track"):
+            print("back_track ", result[1], "removing:",result[2], "from domain")
+            if("backtracking" not in self.history[0]):
+                self.history.insert(0, copy.deepcopy((self.history[0][0], self.history[0][1],self.history[0][2], "backtracking")))
+                self.current_csp = self.history[0]
+            # still have a back tracking bug!!! # it doesn't jump to the correct block to check
+            print(result)
+            self.current_csp[0].unassigned[result[1]].domain.remove(result[2])
+            if(self.current_csp[0].unassigned[result[1]].domain == []):
+                #for csp in self.history:
+                print("this needs to be filled in")
+                    
+
+            # print("removing from the global")
+            #import ipdb; ipdb.set_trace()
+
+        else:
+            # all is good
+            result_c = copy.deepcopy(result)
+            self.history.insert(0,result_c)
+            self.current_csp = (result[0], result[1])
 
 class State:
 
@@ -184,13 +246,15 @@ class GlobalState:
 
 
 def csp_backtrack(global_state, knowledge_base):
+    # TODO: untested !!!
 
-    if (global_state.unassigned == False):
+    if ( not global_state.unassigned):
         print("we are done")
         return global_state, knowledge_base
+    # print(global_state.unassigned)
     variable = mrv(global_state, knowledge_base)
+    # print("the variable is", variable)
     ordered_domain = least_constraining_value(variable, global_state, knowledge_base) # get the next value
-
     for value in ordered_domain:
 
         # if value is consistent with assignment
@@ -199,16 +263,15 @@ def csp_backtrack(global_state, knowledge_base):
 
         temp_state = copy.deepcopy(global_state)
         temp_state.unassigned[variable].domain = [value]
-
         if(arc_3(variable, value, temp_state, knowledge_base) == False):
-            # TODO: THIS HAS BEEN UNTESTED
-            print("this value is an impossible assignment")
-            ordered_domain.remove(value) 
+            # BACKTRACK!!!
+            return ("back_track", variable, value) 
         else:
-            global_state.assigned[value] = temp_state.unassigned[variable]
+            global_state.assigned[value][variable] = temp_state.unassigned[variable]
+            if (len(global_state.assigned[value][variable].domain) != 1):
+                global_state.assigned[value][variable].domain.remove(value)
             del global_state.unassigned[variable]
-            return global_state, knowledge_base
-
+            return global_state, knowledge_base, variable
     return False
 
 
@@ -216,6 +279,7 @@ def csp_backtrack(global_state, knowledge_base):
 def mrv(global_state, knowledge_base):
     #find lowest domain val for a variable and return it
     var_val = {}
+    # print(global_state.unassigned, "\nHERE ARE THE UNNASSIGNED VARIABLES")
     for _, var in global_state.unassigned.items():
         var_val[var.task] = len(var.domain)
 
@@ -294,19 +358,23 @@ def least_constraining_value(variable, global_state, knowledge_base):
 #inference
 def arc_3(variable, value, global_state, knowledge_base): # could also be arc_4
     queue = [variable]
-
+    # TODO: THIS MIGHT HAVE OUR ERROR
+    # AttributeError: 'NoneType' object has no attribute 'domain'
     while queue != []:
         variable = global_state.unassigned[queue[0]]
 
 
-        print(variable)
+        # print(variable)
         temp_state = copy.deepcopy(global_state)
+        #### HERE
+        # print("WE ARE STARTING TO GET SOME KNOWLEDGE")
+        # print(global_state.unassigned)
         temp_state = knowledge_base.recompute_binary_constraints(variable.task, temp_state)
 
         # if a domain is empty
         for _, state in temp_state.unassigned.items():
             if state.domain == []:
-                print("there are no possible assignment!!!")
+                print("arc inconsistent")
                 return False
 
         # if the domain changes add it to the queue
@@ -314,16 +382,17 @@ def arc_3(variable, value, global_state, knowledge_base): # could also be arc_4
             domain_change = False
             for value in state.domain:
                 if value not in temp_state.unassigned[state.task].domain:
-                    print(value)
+                    # print(value)
                     domain_change = True
 
             if domain_change:
                 queue.append(state.task)
+
         # remove the fist value because it worked
         queue.remove(variable.task)
-        print(queue)
+        # print(queue)
         global_state = temp_state
-
+    print("arc consistent")
     return global_state, knowledge_base
 
 def read_input():
@@ -479,11 +548,11 @@ def read_input():
     # fill in the domain for the variables that dont have assignments
     for _, value in global_state.unassigned.items():
         if value.domain == []:
-            value.domain = global_state.ordered_domain
+            value.domain = copy.deepcopy(global_state.ordered_domain)
 
     # fill assigned with processors
     for processor in global_state.ordered_domain:
-        global_state.assigned[processor] = []
+        global_state.assigned[processor] = {}
 
     return global_state, k_base
 
@@ -495,12 +564,49 @@ if __name__ == "__main__":
     #TODO: UNIQUE stuff, make sure no task is longer than the deadline
 
 
-    global_state, knowledge_base = read_input()
+    g_state, knowledge_base = read_input()
 
+    # check the total time we have
+    var_time = 0
+    for var in g_state.unassigned.values():
+        var_time += var.duration
+    
+    proc_time = 0
+    for proc in g_state.ordered_domain:
+        proc_time += 1
 
+    if (proc_time * knowledge_base.deadline - var_time) < 0:
+        print("There is no solution")
+        exit()
     import ipdb; ipdb.set_trace()
-    # this gets passed in to trace to start
-    # global_state = [state(), state(), state()]
 
+    # is the time too long? who knows?
+    for i, varable in enumerate(g_state.unassigned.keys()):
+        if i == 0:
+            ret = knowledge_base.recompute_binary_constraints(varable, g_state)
+        else:
+            ret = knowledge_base.recompute_binary_constraints(varable, ret)
+    
+    for value in ret.unassigned.values():
+        if (value.domain == []):
+            print("There is no solution")
+            exit()
 
-    # trace()
+    trace = Trace(g_state, knowledge_base)
+
+    while (trace.current_csp[0].unassigned):
+        print(trace.current_csp[0].assigned)
+        trace.run_trace()
+    print("the final result is")
+    # assignement of p
+    # deadline
+    # total lenght for each p
+    # total length
+    for proc, list_ in trace.current_csp[0].assigned.items():
+        time_used = 0
+        tasks = []
+        for key, value in list_.items():
+            time_used += value.duration
+            tasks.append(value.task)
+        
+        print("{} : (time used {} of {},  {})".format(proc, time_used, trace.current_csp[1].deadline, tasks))
