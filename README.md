@@ -98,12 +98,84 @@ We used the following algorithms (in order) in our approach:
 
 
 RESULTS:
+
 Example file 1 (test1.txt):
+```bash
+$ python csp-solver.py test1.txt
+There is no solution
+```
 
-Example file 2 (test2.txt):
-
+Example file 2 (test3.txt):
+``` bash
+$ python csp-solver.py test3.txt
+{'q': {}, 'z': {}, 'p': {}, 'x': {}, 'y': {}, 'r': {}}
+arc consistent
+{'q': {'D': D, 3, ['q']}, 'z': {}, 'p': {}, 'x': {}, 'y': {}, 'r': {}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {}, 'p': {}, 'x': {}, 'y': {}, 'r': {}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {}, 'p': {'K': K, 4, ['p']}, 'x': {}, 'y': {}, 'r': {}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {}, 'p': {'K': K, 4, ['p']}, 'x': {}, 'y': {}, 'r': {'J': J, 19, ['r']}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {}, 'p': {'K': K, 4, ['p']}, 'x': {'I': I, 7, ['x']}, 'y': {}, 'r': {'J': J, 19, ['r']}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {}, 'p': {'K': K, 4, ['p']}, 'x': {'I': I, 7, ['x']}, 'y': {'H': H, 12, ['y']}, 'r': {'J': J, 19, ['r']}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {'L': L, 9, ['z']}, 'p': {'K': K, 4, ['p']}, 'x': {'I': I, 7, ['x']}, 'y': {'H': H, 12, ['y']}, 'r': {'J': J, 19, ['r']}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {'L': L, 9, ['z']}, 'p': {'G': G, 15, ['p'], 'K': K, 4, ['p']}, 'x': {'I': I, 7, ['x']}, 'y': {'H': H, 12, ['y']}, 'r': {'J': J, 19, ['r']}}
+arc consistent
+{'q': {'C': C, 6, ['q'], 'D': D, 3, ['q']}, 'z': {'L': L, 9, ['z']}, 'p': {'G': G, 15, ['p'], 'K': K, 4, ['p']}, 'x': {'E': E, 5, ['x'], 'I': I, 7, ['x']}, 'y': {'H': H, 12, ['y']}, 'r': {'J': J, 19, ['r']}}
+arc consistent
+the final result is
+q : (time used 9 of 22,  ['C', 'D'])
+z : (time used 9 of 22,  ['L'])
+p : (time used 19 of 22,  ['G', 'K'])
+x : (time used 20 of 22,  ['E', 'F', 'I'])
+y : (time used 12 of 22,  ['H'])
+r : (time used 19 of 22,  ['J'])
+```
 Australian Map Coloring (maptest.txt):
-
+```bash
+$ python csp-solver.py maptest.txt
+{'r': {}, 'b': {}, 'g': {}}
+arc consistent
+{'r': {'W': W, 1, ['r']}, 'b': {}, 'g': {}}
+arc inconsistent
+back_track  V removing: g from domain
+('back_track', 'V', 'g')
+{'r': {'W': W, 1, ['r']}, 'b': {}, 'g': {}}
+arc inconsistent
+back_track  V removing: b from domain
+('back_track', 'V', 'b')
+{'r': {'W': W, 1, ['r']}, 'b': {}, 'g': {}}
+arc consistent
+{'r': {'W': W, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {}}
+arc inconsistent
+back_track  Q removing: g from domain
+('back_track', 'Q', 'g')
+{'r': {'W': W, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {}}
+arc inconsistent
+back_track  Q removing: b from domain
+('back_track', 'Q', 'b')
+{'r': {'W': W, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {}}
+arc consistent
+{'r': {'W': W, 1, ['r'], 'Q': Q, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {}}
+arc consistent
+{'r': {'W': W, 1, ['r'], 'Q': Q, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {'N': N, 1, ['g']}}
+arc inconsistent
+back_track  T removing: b from domain
+('back_track', 'T', 'b')
+{'r': {'W': W, 1, ['r'], 'Q': Q, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {'N': N, 1, ['g']}}
+arc consistent
+{'r': {'W': W, 1, ['r'], 'Q': Q, 1, ['r'], 'V': V, 1, ['r']}, 'b': {}, 'g': {'N': N, 1, ['g'], 'T': T, 1, ['g']}}
+arc consistent
+the final result is
+r : (time used 3 of 22,  ['W', 'Q', 'V'])
+b : (time used 1 of 22,  ['S'])
+g : (time used 2 of 22,  ['N', 'T'])
+```
 
 STRENGTHS:
 - Unary constraints are condensed to inclusive in the read function. We
@@ -111,4 +183,4 @@ invert the exclusive unary constraints to create the initial processor lists
 for each variable.
 
 WEAKNESSES:
--Our backtracking approach is not as efficient as it could be.
+- Our backtracking approach is not as efficient as it could be.

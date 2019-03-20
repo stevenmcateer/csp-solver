@@ -578,7 +578,6 @@ if __name__ == "__main__":
     if (proc_time * knowledge_base.deadline - var_time) < 0:
         print("There is no solution")
         exit()
-    import ipdb; ipdb.set_trace()
 
     # is the time too long? who knows?
     for i, varable in enumerate(g_state.unassigned.keys()):
