@@ -14,20 +14,17 @@ class CSP:
 
 
 def simplify_rules(csp):
+    print("simplifying rules")
     # can also find subset rules and break apart
     for _ in range(2):
         to_delete = []
         for j, rule in enumerate(csp.rules):
             for i, cell in enumerate(rule["cells"]):
                 if cell in csp.known_mines:
-                    print("rule to remove stuff {}".format(rule))
-                    print("removing cell {}".format(cell))
                     rule["count"] = rule["count"] - 1
                     del rule["cells"][rule["cells"].index(cell)]
             if rule["cells"] == []:
                 to_delete.append(j)
-        print("rules \n", csp.rules)
-        print("deleted rules \n", to_delete)
 
         to_delete = to_delete[::-1]
         for delete in to_delete:
@@ -44,9 +41,7 @@ def simplify_rules(csp):
     
     
     rules_to_delete = sorted(rules_to_delete, reverse=True)
-    print("BULL SHIT", csp.rules)
     for rule_index in rules_to_delete:
-        print(rule_index)
         del csp.rules[rule_index]
 
 
@@ -75,13 +70,11 @@ def solver(csp, b):
         # make ALL possible safe guesses
         make_safe_guess(csp)
         
-        print("rules! \n", csp.rules, len(csp.rules))
         possible_mines = trivial_constraint(csp)
-        print("possible mines", possible_mines)
-        print("known mines", csp.known_mines)
 
 #find the min remaining value
 def trivial_constraint(csp):
+    print("identify trivial constraints")
     mines = []
     for rule in csp.rules:
         if rule["count"] == len(rule["cells"]):
@@ -102,7 +95,6 @@ def make_safe_guess(csp):
             print(guess)
             new_cells = b.guess_cell(guess[0], guess[1])
             uncovered_cells += new_cells
-            print("THESE ARE THE NEW CELLS AHHH\n", new_cells)
             del csp.cells_remaining[csp.cells_remaining.index(guess)]
             for rule in csp.rules:
                 if guess in rule["cells"]:
@@ -194,8 +186,6 @@ def update_rules(board, csp, new_cells):
             if cell_ in rule["cells"]:
                 del rule["cells"][rule["cells"].index(cell_)]
 
-    
-    print("cells remaining", csp.cells_remaining)
 
 if __name__ == "__main__":
     b = Board(10, 10, 10)
@@ -205,5 +195,4 @@ if __name__ == "__main__":
     print("rules! \n", csp.rules, len(csp.rules))
     if(len(csp.known_mines) == csp.total_mines):
         for not_mine in csp.cells_remaining:
-            print(not_mine, "this is not a mine!")
             b.guess_cell(not_mine[0], not_mine[1])

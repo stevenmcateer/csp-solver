@@ -126,6 +126,7 @@ class Board:
                 if (cell.visible == False and cell.value != 'M'):
                     return False
         print("you win!")
+        
         exit()
         return True
 
