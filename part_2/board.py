@@ -5,17 +5,23 @@ class Cell:
         self.value = value_
         self.count = 0
         self.visible = False
+        self.flag = False
 
     def show(self):
         self.visible = True
+
+    def set_flag(self):
+        self.flag = True
 
     def __repr__(self):
         if self.visible == True:
             if self.count > 0 and self.value == ".":
                 return str(self.count)
             return self.value
+        if self.flag == True:
+            return "💣"
         else:
-            return "□"
+            return "█"
 
 class Board:
     #TODO: maybe make resizeable board
@@ -71,8 +77,10 @@ class Board:
     def guess_cell(self, x,y):
         if((x,y) not in self.mines):
             self.grid[y][x].visible = True
-            self.expand_selection(x, y)
+            new_cells = self.expand_selection(x, y)
             self.print_board()
+
+            return (new_cells)
         elif (x,y) in self.mines:
             for mine in self.mines:
                 self.grid[mine[1]][mine[0]].visible = True
@@ -100,6 +108,7 @@ class Board:
         return x, y
 
     def expand_selection(self,x,y):
+        uncovered_cells = [(x,y),]
         if (self.grid[y][x].count == 0 and self.grid[y][x].value == "."):
             adj_x = [x-1, x, x+1]
             adj_y = [y-1, y, y+1]
@@ -107,7 +116,9 @@ class Board:
                 for x_ in adj_x:
                     if (x_ >= 0 and x_ < self.board_size[0] and y_ >= 0 and y_ < self.board_size[1] and self.grid[y_][x_].visible != True):
                         self.grid[y_][x_].visible = True
-                        self.expand_selection(x_,y_)
+                        new_cells = self.expand_selection(x_,y_)
+                        uncovered_cells += new_cells
+        return uncovered_cells
 
     def did_win(self):
         for row in self.grid:
