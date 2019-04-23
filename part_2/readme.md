@@ -14,6 +14,11 @@ input files to test with.
 ## OUR APPROACH:
 
 ```
+Variables: Unexplored cells
+Domain: 1, 0 (Bomb, or not)
+Constraints: Rules: [{mine_count = 1,  [(3, 2), (3, 1)]}]
+
+
 Objects:
     - Board(width, height, num_of_bombs)
     - Cell(x, y, value, visible)
@@ -77,12 +82,14 @@ have a mine count of 0 and a list of neighbors. Mark all of these cells
 
 ## CHANGES FROM PART 1:
 
-Because of the nature of how minesweeper is played, we had to change the code from
-our Part 1 quite a bit.
-
+Since the variables, domain and constraints in Minesweeper are so different from part 1,
+ we had to rewrite the code.
 
 
 ## RESULTS:
+
+The following sections show our solver winning the game, and reaching an unsatisfiable
+ board.
 
 ### Winning the Game
 
