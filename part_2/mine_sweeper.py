@@ -193,6 +193,7 @@ if __name__ == "__main__":
     solver(csp, b)
     # need to update rules 
     print("rules! \n", csp.rules, len(csp.rules))
+    print("unsatisfiable")
     if(len(csp.known_mines) == csp.total_mines):
         for not_mine in csp.cells_remaining:
             b.guess_cell(not_mine[0], not_mine[1])
